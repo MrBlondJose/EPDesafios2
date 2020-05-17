@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Gustavo Medeiros Santos
@@ -9,22 +6,48 @@ import java.util.TreeSet;
  */
 public class Main {
 
-    public static void main(String [] args){
-        Main.chamaBackTracking();
+    public static Scanner io= new Scanner(System.in);
+
+    public static String ask(){
+        return io.nextLine();
     }
 
-    public static void chamaBackTracking(){
-        TreeSet<BacktrackingElement> elements = new TreeSet<BacktrackingElement>();
-        elements.add(new BacktrackingElement(600,8));
-        elements.add(new BacktrackingElement(500,7));
-        elements.add(new BacktrackingElement(300,4));
-        elements.add(new BacktrackingElement(250,3));
-        elements.add(new BacktrackingElement(480,5));
-        elements.add(new BacktrackingElement(290,3));
-        elements.add(new BacktrackingElement(285,3));
-        Backtracking b= new Backtracking(elements,10);
-        BackTrackingResult response = b.getBetterCombination();
+    public static void main(String [] args){
+        int n=Integer.parseInt(ask());
+        int nProjeteis;
+        CanhaoBacktracking backtracking;
+        TreeSet<BacktrackingElement> projeteis;
+        BackTrackingResult response;
+        String [] projeteisInput;
+        int resistenciaCastelo;
+        int pesoMax;
+        for(int i=0;i<n;i++){
+            nProjeteis=Integer.parseInt(ask());
+            projeteis=new TreeSet<BacktrackingElement>();
+            for(int j=0;j<nProjeteis;j++){
+                  projeteisInput=ask().split(" ");
+                  projeteis.add(new BacktrackingElement(Integer.parseInt(projeteisInput[0]),Integer.parseInt(projeteisInput[1]),j));
+            }
+            pesoMax=Integer.parseInt(ask());
+            resistenciaCastelo=Integer.parseInt(ask());
+            backtracking=new CanhaoBacktracking(projeteis,pesoMax,resistenciaCastelo);
+            response=backtracking.getBetterCombination();
+            Main.trataResposta(backtracking);
+        }
+
     }
+
+
+    public static void trataResposta(CanhaoBacktracking canhao){
+        if(canhao.avaliaCondicaoParada()){
+            System.out.println("Missao completada com sucesso");
+        }
+        else{
+            System.out.println("Falha na missao");
+        }
+    }
+
+
 
 }
 
@@ -152,14 +175,16 @@ class BackTrackingResult{
 class BacktrackingElement implements Comparable{
     private int value;
     private int weight;
+    private int id;
 
-    public boolean conditionToAdd(int maxWeight,int currentWeight ){
+    public boolean conditionToAdd(int maxWeight,int currentWeight){
         return this.weight+currentWeight<=maxWeight;
     }
 
-    public BacktrackingElement(int value, int weight) {
+    public BacktrackingElement(int value, int weight,int id) {
         this.value = value;
         this.weight = weight;
+        this.id=id;
     }
 
     public int getValue() {
@@ -181,8 +206,26 @@ class BacktrackingElement implements Comparable{
     @Override
     public int compareTo(Object o) {
         BacktrackingElement b= (BacktrackingElement)o;
-        if(b.getValue()==this.getValue()) return 0;
+        if(b.getValue()==this.getValue() && b.id==this.id) return 0;
         if(b.getValue()>this.getValue()) return 1;
         return -1;
+    }
+}
+
+class CanhaoBacktracking extends Backtracking{
+    public int resistenciaCastelo;
+
+    public CanhaoBacktracking(TreeSet<BacktrackingElement> elements, int maxWeight) {
+        super(elements, maxWeight);
+    }
+
+    public CanhaoBacktracking(TreeSet<BacktrackingElement> elements, int maxWeight, int resistenciaCastelo) {
+        super(elements, maxWeight);
+        this.resistenciaCastelo=resistenciaCastelo;
+    }
+
+    @Override
+    public boolean avaliaCondicaoParada() {
+        return this.resistenciaCastelo<=this.melhorResult.getCurrentValue();
     }
 }
