@@ -18,6 +18,7 @@ public class Main {
         ApagarNumeroBacktracking apagarNumeroBacktracking;
         BackTrackingResult result;
         String [] numbersInput;
+        Double l=14527676352237648962d;
         int inputNumber;
         while(true){
             input = ask().split(" ");
@@ -113,18 +114,18 @@ class Backtracking{
 class BackTrackingResult{
     private List<BacktrackingElement> responseList;
     private final int maxWeight;
-    private int currentWeight;
-    private int currentValue;
+    private long currentWeight;
+    private Double currentValue;
 
 
-    public int getCurrentValue() {
+    public Double getCurrentValue() {
         return currentValue;
     }
 
     public BackTrackingResult(int maxWeight) {
         this.maxWeight = maxWeight;
         this.currentWeight=0;
-        this.currentValue=0;
+        this.currentValue=0d;
         this.responseList=new ArrayList<BacktrackingElement>();
     }
 
@@ -141,15 +142,15 @@ class BackTrackingResult{
     }
 
 
-    public int getCurrentWeight() {
+    public long getCurrentWeight() {
         return currentWeight;
     }
 
-    public void setCurrentWeight(int currentWeight) {
+    public void setCurrentWeight(long currentWeight) {
         this.currentWeight = currentWeight;
     }
 
-    public void setCurrentValue(int currentValue) {
+    public void setCurrentValue(Double currentValue) {
         this.currentValue = currentValue;
     }
 
@@ -194,11 +195,11 @@ class BacktrackingElement implements Comparable{
 
     private int id;
 
-    public boolean conditionToAdd(int maxWeight,int currentWeight){
+    public boolean conditionToAdd(int maxWeight, long currentWeight){
         return this.weight+currentWeight<=maxWeight;
     }
 
-    public BacktrackingElement(int value, int weight,int id) {
+    public BacktrackingElement(int value, int weight, int id) {
         this.value = value;
         this.weight = weight;
         this.id=id;
@@ -251,14 +252,14 @@ class ApagarNumeroBackTrackingResult extends BackTrackingResult{
 
 
 
-    private  Integer  [] numeros;
+    private Integer[] numeros;
 
     public ApagarNumeroBackTrackingResult(int maxWeight,Collection<ApagarNumeroBackTrackingElement> inputList) {
         super(maxWeight);
-        this.numeros= new Integer [inputList.size()];
+        this.numeros= new Integer[inputList.size()];
         int i=0;
         for(ApagarNumeroBackTrackingElement e: inputList){
-            this.numeros[i]=e.getValue();
+            this.numeros[i]=  e.getValue();
             i++;
         }
         this.escolhidos=new boolean [this.numeros.length];
@@ -282,17 +283,17 @@ class ApagarNumeroBackTrackingResult extends BackTrackingResult{
         return false;
     }
 
-    private Integer ajustaValor(BacktrackingElement element){
+    private Double ajustaValor(BacktrackingElement element){
         //this.escolhidos[element.getId()]=true;
         int valor=0;
+        String s="0";
         int potencia=1;
-        for(int i=escolhidos.length-1;i>=0;i--){
+        for(int i=0;i<escolhidos.length;i++){
             if(this.escolhidos[i]){
-                valor+=this.numeros[i]*potencia;
-                potencia=potencia*10;
+                s+=this.numeros[i];
             }
         }
-        return valor;
+        return Double.parseDouble(s);
     }
 
     @Override
@@ -330,4 +331,10 @@ class ApagarNumeroBacktracking extends Backtracking{
         }
     }
 
+    @Override
+    public void avaliaMelhorResult() {
+        if(this.backTrackingResult.getCurrentValue()> this.melhorResult.getCurrentValue() && backTrackingResult.getCurrentWeight()==backTrackingResult.getMaxWeight()){
+            this.melhorResult=backTrackingResult.copy();
+        }
+    }
 }
