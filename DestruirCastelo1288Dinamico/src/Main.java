@@ -17,9 +17,10 @@ public class Main {
         int nProjeteis;
         CanhaoBacktracking backtracking;
         List<BacktrackingElement> projeteis;
-        BackTrackingResult response;
+
         String [] projeteisInput;
         Long resistenciaCastelo;
+
         int pesoMax;
         for(int i=0;i<n;i++){
             nProjeteis=Integer.parseInt(ask());
@@ -55,168 +56,63 @@ public class Main {
 
 class Backtracking{
 
-    BackTrackingResult backTrackingResult;
-    BackTrackingResult melhorResult;
+
     List<BacktrackingElement> inputList;
     long[][] matrizDinamica;
     long[] currentWeigth;
+    int maxWeight;
 
 
     public Backtracking(List<BacktrackingElement> elements, int maxWeight){
         this.inputList=elements;
-        this.backTrackingResult=new BackTrackingResult(maxWeight);
-        this.melhorResult=new BackTrackingResult(maxWeight);
-        this.matrizDinamica = new long[elements.size()][maxWeight];
+
+        this.matrizDinamica = new long[elements.size()+1][maxWeight+1];
         this.currentWeigth =new long[matrizDinamica[0].length];
+        this.maxWeight=maxWeight;
     }
 
 
 
-    /*
-    public boolean executeBacktracking(int elementPos){
-        if(this.avaliaCondicaoParada()) return true;
-        int t=inputList.size();
-        //BacktrackingElement currentElement = this.inputList.get(elementPos);
-        for(int i = elementPos;i<t;i++){
-            BacktrackingElement element=this.inputList.get(i);
-            if(!this.backTrackingResult.addElement(element)) continue;
-            this.avaliaMelhorResult();
-            if(i==t-1){
-                backTrackingResult.removeElement(element);
-                continue;
-            }
-            if(this.executeBacktracking(i+1)){
-                this.backTrackingResult.removeElement(element);
-                return true;
-            }
-            else{
-                this.backTrackingResult.removeElement(element);
-            }
 
-        }
-        //this.backTrackingResult.removeElement(this.inputList.get(elementPos));
-        return false;
-    }*/
-
-    public void executeDinamico(){
+    public long executeDinamico(){
         int n= this.matrizDinamica.length;
         long[] currentLine;
         BacktrackingElement currentElement;
         for(int i=1;i<n;i++){
-
             currentLine=matrizDinamica[i];
-            currentElement=this.inputList.get(i);
+            currentElement=this.inputList.get(i-1);
             for(int j=1;j<currentLine.length;j++){
-                 adicionaElemento(currentElement,i,j);
+                 this.matrizDinamica[i][j]=this.getMaxValue(currentElement,i,j);
+                 if(this.avaliaCondicaoParada(i,j)) return this.matrizDinamica[i][j];
                 }
         }
+        return matrizDinamica[matrizDinamica.length-1][matrizDinamica[0].length-1];
     }
 
-    public void adicionaElemento(BacktrackingElement currentelement, int i, int j){
-        Long somaPeso = this.currentWeigth[j]+currentelement.getWeight();
-        Long somaValue=currentelement.getValue()+this.matrizDinamica[i-1][j];
-        if(somaPeso>j) {
-            this.matrizDinamica[i][j]=this.matrizDinamica[i-1][j];
-            return;
-        }
-        if(somaValue>matrizDinamica[i-1][j]){
-            //Inclui os 2
-            this.matrizDinamica[i][j]=somaValue;
-            this.currentWeigth[j]=somaPeso;
-            return;
-        }
-        if(currentelement.getWeight()<j && currentelement.getValue()>this.matrizDinamica[i-1][j]){
-            //Inclui so o atual. Pois seu ganho e melhor
-            this.matrizDinamica[i][j]=new Long(currentelement.getValue());
-            this.currentWeigth[j]=new Long(currentelement.getWeight());
-        }
 
+    private Long getMaxValue(BacktrackingElement element,int i, int p){
+        long valorSemElemento=this.matrizDinamica[i-1][p];
+        if(p<element.getWeight()) return valorSemElemento;
+        long valorComElemento=this.matrizDinamica[i-1][p-element.getWeight()]+element.getValue();
+        if(valorComElemento>valorSemElemento) return valorComElemento;
+        else return valorSemElemento;
     }
 
-    public void avaliaMelhorResult(){
-        if(this.backTrackingResult.getCurrentValue()> this.melhorResult.getCurrentValue()){
-            this.melhorResult=backTrackingResult.copy();
-        }
-    }
 
-    public boolean avaliaCondicaoParada(){
+    public boolean avaliaCondicaoParada(int i, int j){
         return false;
         //return this.melhorResult.getCurrentWeight()>=this.melhorResult.getMaxWeight();
     }
 
     public Long getBetterCombination(){
-        this.executeDinamico();
-
-        return this.matrizDinamica[matrizDinamica.length-1][matrizDinamica[0].length-1];
+        long r= this.executeDinamico();
+        return r;
     }
 
 
 }
 
-class BackTrackingResult{
-    private List<BacktrackingElement> responseList;
-    private final int maxWeight;
-    private int currentWeight;
-    private int currentValue;
 
-
-
-    public int getCurrentValue() {
-        return currentValue;
-    }
-
-    public BackTrackingResult(int maxWeight) {
-        this.maxWeight = maxWeight;
-        this.currentWeight=0;
-        this.currentValue=0;
-        this.responseList=new ArrayList<BacktrackingElement>();
-    }
-
-    public List<BacktrackingElement> getResponseList() {
-        return responseList;
-    }
-
-    public void setResponseList(List<BacktrackingElement> responseList) {
-        this.responseList = responseList;
-    }
-
-    public int getMaxWeight() {
-        return maxWeight;
-    }
-
-
-    public int getCurrentWeight() {
-        return currentWeight;
-    }
-
-    public void setCurrentValue(int currentValue) {
-        this.currentValue = currentValue;
-    }
-
-    public boolean addElement(BacktrackingElement element){
-        if(element.conditionToAdd(this.maxWeight,this.currentWeight)){
-            this.responseList.add(element);
-            this.currentWeight+=element.getWeight();
-            this.currentValue+=element.getValue();
-            return true;
-        }
-        return false;
-    }
-
-    public void removeElement(BacktrackingElement element){
-            this.responseList.remove(element);
-            this.currentWeight-=element.getWeight();
-            this.currentValue-=element.getValue();
-    }
-
-    public BackTrackingResult copy(){
-        BackTrackingResult backTrackingResult=new BackTrackingResult(this.maxWeight);
-        backTrackingResult.currentWeight=this.currentWeight;
-        //backTrackingResult.getResponseList().addAll(this.responseList);
-        backTrackingResult.currentValue=this.currentValue;
-        return backTrackingResult;
-    }
-}
 
 class BacktrackingElement implements Comparable{
     private int value;
@@ -269,7 +165,9 @@ class CanhaoBacktracking extends Backtracking{
     }
 
     @Override
-    public boolean avaliaCondicaoParada() {
-        return this.resistenciaCastelo<=this.melhorResult.getCurrentValue();
+    public boolean avaliaCondicaoParada(int i,int j) {
+        //System.out.println(i+" "+j);
+        return this.resistenciaCastelo<=this.matrizDinamica[i][j];
+
     }
 }
