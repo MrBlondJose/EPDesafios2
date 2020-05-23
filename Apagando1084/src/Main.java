@@ -28,7 +28,7 @@ public class Main {
             Main.criaEntrada(numeros);
             pesoMax = numeros.size()-Integer.parseInt(input[1]);
             backtracking = new ApagaBacktracking(numeros, pesoMax);
-            Long r = backtracking.getBetterCombination();
+            String r = backtracking.getBetterCombination();
             System.out.println(r);
         }
     }
@@ -38,7 +38,7 @@ public class Main {
        int n=input.length;
        int i=0;
        for(String s: input){
-           elements.add(new BacktrackingElement(Integer.parseInt(s),1,i));
+           elements.add(new BacktrackingElement((s),1,i));
            i++;
        }
     }
@@ -49,25 +49,34 @@ class Backtracking{
 
 
     List<BacktrackingElement> inputList;
-    long[][] matrizDinamica;
-    long[] currentWeigth;
+    String[][] matrizDinamica;
+
     int maxWeight;
 
 
     public Backtracking(List<BacktrackingElement> elements, int maxWeight){
         this.inputList=elements;
 
-        this.matrizDinamica = new long[elements.size()+1][maxWeight+1];
-        this.currentWeigth =new long[matrizDinamica[0].length];
+        this.matrizDinamica = new String[elements.size()+1][maxWeight+1];
+
         this.maxWeight=maxWeight;
+        this.populaMatrizDinamica();
+    }
+
+    public void populaMatrizDinamica(){
+        for (int i=0;i<matrizDinamica.length;i++){
+            for(int j=0;j<matrizDinamica[i].length;j++){
+                matrizDinamica[i][j]="";
+            }
+        }
     }
 
 
 
 
-    public long executeDinamico(){
+    public String executeDinamico(){
         int n= this.matrizDinamica.length;
-        long[] currentLine;
+        String[] currentLine;
         BacktrackingElement currentElement;
         for(int i=1;i<n;i++){
             currentLine=matrizDinamica[i];
@@ -81,11 +90,11 @@ class Backtracking{
     }
 
 
-    private Long getMaxValue(BacktrackingElement element,int i, int p){
-        long valorSemElemento=this.matrizDinamica[i-1][p];
+    private String getMaxValue(BacktrackingElement element, int i, int p){
+        String valorSemElemento=this.matrizDinamica[i-1][p];
         if(p<element.getWeight()) return valorSemElemento;
-        long valorComElemento=Long.parseLong(Long.toString(this.matrizDinamica[i-1][p-element.getWeight()])+Integer.toString(element.getValue()));
-        if(valorComElemento>valorSemElemento) return valorComElemento;
+        String valorComElemento=(this.matrizDinamica[i-1][p-element.getWeight()])+(element.getValue());
+        if(valorComElemento.compareTo(valorSemElemento)>0) return valorComElemento;
         else return valorSemElemento;
     }
 
@@ -95,8 +104,8 @@ class Backtracking{
         //return this.melhorResult.getCurrentWeight()>=this.melhorResult.getMaxWeight();
     }
 
-    public Long getBetterCombination(){
-        long r= this.executeDinamico();
+    public String getBetterCombination(){
+        String r= this.executeDinamico();
         return r;
     }
 
@@ -105,8 +114,8 @@ class Backtracking{
 
 
 
-class BacktrackingElement implements Comparable{
-    private int value;
+class BacktrackingElement{
+    private String value;
     private int weight;
     private int id;
 
@@ -114,17 +123,17 @@ class BacktrackingElement implements Comparable{
         return this.weight+currentWeight<=maxWeight;
     }
 
-    public BacktrackingElement(int value, int weight,int id) {
+    public BacktrackingElement(String value, int weight, int id) {
         this.value = value;
         this.weight = weight;
         this.id=id;
     }
 
-    public int getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(int value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
@@ -136,13 +145,7 @@ class BacktrackingElement implements Comparable{
         this.weight = weight;
     }
 
-    @Override
-    public int compareTo(Object o) {
-        BacktrackingElement b= (BacktrackingElement)o;
-        if(b.getValue()==this.getValue() && b.id==this.id) return 0;
-        if(b.getValue()>this.getValue()) return 1;
-        return -1;
-    }
+
 }
 
 class ApagaBacktracking extends Backtracking{
