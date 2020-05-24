@@ -14,12 +14,13 @@ public class Main {
         return io.nextLine();
     }
 
-    public static void main(String [] args) throws Exception {
+    public static void main(String [] args){
 
         int nProjeteis;
         DemogorgonBacktracking backtracking;
         List<BacktrackingElement> feiticos;
         String [] input;
+
         Long resistenciaCastelo;
 
         int vidaMonstro;
@@ -30,19 +31,19 @@ public class Main {
             //feiticos.add(new BacktrackingElement(0, 0, -1));
             vidaMonstro = Integer.parseInt(input[1]);
             int pesoMax= Main.criaEntrada(Integer.parseInt(input[0]), feiticos,vidaMonstro);
-            /*if(pesoMax==-1){
+            if(pesoMax==-1){
                 System.out.println(-1);
                 continue;
-            }*/
+            }
 
-            backtracking = new DemogorgonBacktracking(feiticos, vidaMonstro,vidaMonstro);
+            backtracking = new DemogorgonBacktracking(feiticos, pesoMax,vidaMonstro,Integer.parseInt(input[0]));
             Long r = backtracking.getBetterCombination();
             if(backtracking.derrotouMonstro) System.out.println(r);
             else System.out.println(-1);
         }
     }
 
-    public static int criaEntrada(int n, List<BacktrackingElement> elements,int vidaMonstro) throws Exception {
+    public static int criaEntrada(int n, List<BacktrackingElement> elements,int vidaMonstro){
         String [] input;
         int nAdicoes=0;
         int valor;
@@ -54,12 +55,11 @@ public class Main {
         BacktrackingElement melhorElement=new BacktrackingElement(-1,100,-1);
         for(int i=0;i<n;i++){
             input= ask().split(" ");
-            valor=Integer.parseInt(input[1]);
-            peso=Integer.parseInt(input[0]);
+            valor=Integer.parseInt(input[0]);
+            peso=Integer.parseInt(input[1]);
             BacktrackingElement element=new BacktrackingElement(valor,peso,i);
             elements.add(element);
             if(element.getValue()>melhorElement.getValue()) melhorElement=element;
-            if(i>0) Main.executaTrocaAnterior(elements,i-1,element);
             danos+=valor;
             somaPesos+=peso;
             if(danos<vidaMonstro || insere){
@@ -78,36 +78,11 @@ public class Main {
         primeiro.setValue(auxValor);
         primeiro.setWeight(auxPeso);
         if(danos<vidaMonstro) return -1;
-        if(counter>7500){
-            return recalculaMana(elements,vidaMonstro);
-        }
         return counter;
     }
 
-    public static int recalculaMana(List<BacktrackingElement> elements, int vidaMonstro){
-        int manas=0;
-        int danos=0;
-        int t=elements.size();
-        for(int i=0;i<t && danos<vidaMonstro;i++){
-            manas+=elements.get(i).getWeight();
-            danos+=elements.get(i).getValue();
-        }
-        if(manas>15000) return 10000;
-        return manas;
-    }
 
-    public static void executaTrocaAnterior(List<BacktrackingElement> list,int i,BacktrackingElement element) {
-        BacktrackingElement anterior = list.get(i);
-        int auxValor = anterior.getValue();
-        int auxPeso = anterior.getWeight();
-        if (anterior.getValue() < element.getValue()) {
-            BacktrackingElement primeiro = list.get(0);
-            anterior.setValue(primeiro.getValue());
-            anterior.setWeight(primeiro.getWeight());
-            primeiro.setValue(auxValor);
-            primeiro.setWeight(auxPeso);
-        }
-    }
+
 
 }
 
@@ -118,63 +93,51 @@ class Backtracking{
     long[][] matrizDinamica;
     long[] currentWeigth;
     int maxWeight;
+    int nFeiticos;
 
-
-    public Backtracking(List<BacktrackingElement> elements, int maxWeight){
+    public Backtracking(List<BacktrackingElement> elements, int maxWeight,int nFeiticos){
         this.inputList=elements;
 
-        this.matrizDinamica = new long[elements.size()+1][maxWeight+1];
+        this.matrizDinamica = new long[1][maxWeight+1];
         this.currentWeigth =new long[matrizDinamica[0].length];
         this.maxWeight=maxWeight;
-        this.populaMatriz();
+        this.nFeiticos=nFeiticos;
     }
-
-    public void populaMatriz(){
-        for(int i=0;i<this.matrizDinamica.length;i++){
-            matrizDinamica[i][0]=10000000000l;
-        }
-        for(int i=0;i<matrizDinamica[0].length;i++){
-            matrizDinamica[0][i]=10000000000l;
-        }
-    }
-
 
 
 
 
     public long executeDinamico(){
-        int n= this.matrizDinamica.length;
+        int n= this.nFeiticos;
         long[] currentLine;
         int nColunas=matrizDinamica[0].length;
         BacktrackingElement currentElement;
-        for(int i=1;i<n;i++){
-            currentLine=matrizDinamica[i];
+        for(int i=1;i<=n;i++){
+            currentLine=matrizDinamica[0];
             currentElement=this.inputList.get(i-1);
+            long[] tempMatriz=new long[currentLine.length];
             for(int j=1;j<nColunas;j++){
-                this.matrizDinamica[i][j]=this.getMaxValue(currentElement,i,j);
-                if(this.avaliaCondicaoParada(i,j)) {
+                tempMatriz[j] =this.getMaxValue(currentElement,i,j);
+                if(this.avaliaCondicaoParada(i,j,tempMatriz[j])) {
                     nColunas=j;
                 }
             }
+            this.matrizDinamica[0]=tempMatriz;
         }
         return matrizDinamica[matrizDinamica.length-1][matrizDinamica[0].length-1];
     }
 
 
     private Long getMaxValue(BacktrackingElement element,int i, int p){
-        long valorSemElemento=this.matrizDinamica[i-1][p];
-        if(!(element.getWeight()>=p)) return valorSemElemento;
-        long valorComElemento;
-        //if(i==1) valorComElemento=element.getValue();
-        int ind=element.getWeight();
-        if(element.getWeight()>p) ind=p;
-        valorComElemento=this.matrizDinamica[i-1][p-ind]+element.getValue();
+        long valorSemElemento=this.matrizDinamica[0][p];
+        if(p<element.getWeight()) return valorSemElemento;
+        long valorComElemento=this.matrizDinamica[0][p-element.getWeight()]+element.getValue();
         if(valorComElemento>valorSemElemento) return valorComElemento;
         else return valorSemElemento;
     }
 
 
-    public boolean avaliaCondicaoParada(int i, int j){
+    public boolean avaliaCondicaoParada(int i, int j,long valor){
         return false;
         //return this.melhorResult.getCurrentWeight()>=this.melhorResult.getMaxWeight();
     }
@@ -235,23 +198,24 @@ class DemogorgonBacktracking extends Backtracking{
     public int vidaMonstro;
     public boolean derrotouMonstro;
 
-    public DemogorgonBacktracking(List<BacktrackingElement> elements, int maxWeight,int vidaMonstro) {
-        super(elements, maxWeight);
+
+    public DemogorgonBacktracking(List<BacktrackingElement> elements, int maxWeight,int vidaMonstro,int nFeiticos) {
+        super(elements, maxWeight,nFeiticos);
         menorMana=1000000;
         this.vidaMonstro=vidaMonstro;
         this.derrotouMonstro=false;
+
     }
 
-    /*
     @Override
-    public boolean avaliaCondicaoParada(int i, int j) {
-        if(this.matrizDinamica[i][j]>=vidaMonstro && j<menorMana){
+    public boolean avaliaCondicaoParada(int i, int j,long valor) {
+        if(valor>=vidaMonstro && j<menorMana){
             menorMana=j;
             derrotouMonstro=true;
             return true;
         }
         return false;
-    }*/
+    }
 
     @Override
     public Long getBetterCombination() {
