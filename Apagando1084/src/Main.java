@@ -26,11 +26,17 @@ public class Main {
             if(input[0].equals("0") && input[1].equals("0")) break;
             numeros = new ArrayList<BacktrackingElement>();
             //numeros.add(new BacktrackingElement(0, 0, -1));
-            Main.criaEntrada(numeros);
+            //Main.criaEntrada(numeros);
             pesoMax = Integer.parseInt(input[0])-Integer.parseInt(input[1]);
             backtracking = new ApagaBacktracking(numeros, pesoMax,Integer.parseInt(input[0]));
+            //Long ini=System.currentTimeMillis();
+
+
+            //System.out.println(ini);
             String r = backtracking.getBetterCombination();
-            System.out.println(r);
+            //Long fim=System.currentTimeMillis();
+            //System.out.println("fi:"+(fim-ini));
+            //System.out.println(r);
         }
     }
 
@@ -125,28 +131,41 @@ class Backtracking{
 
     private String apgaNumeros(){
         int apagados=0;
-        List<BacktrackingElement> pilha=new ArrayList<BacktrackingElement>();
+        //List<BacktrackingElement> pilha=new ArrayList<BacktrackingElement>();
+        char [] input=Main.ask().toCharArray();
         int inseridos=0;
+        char [] response=new char[maxWeight];
+        //Long ini=System.currentTimeMillis();
         for(int i=0;i<this.nElements;i++){
+            //BacktrackingElement currentElement=new BacktrackingElement(input[i],1,i);
+            char currentElement=input[i];
             if(i==0) {
-                pilha.add(inputList.get(i));
+                //pilha.add(currentElement);
+                response[i]= currentElement;
                 inseridos++;
                 continue;
             }
-            BacktrackingElement currentElement=inputList.get(i);
-            while(inseridos>0 && currentElement.getValue().compareTo(pilha.get(inseridos-1).getValue())>0  && apagados<this.nElements-maxWeight){
-                pilha.remove(inseridos-1);
+            //BacktrackingElement currentElement=inputList.get(i);
+
+            while(inseridos>0 && currentElement>response[inseridos-1]  && apagados<this.nElements-maxWeight){
+                response[inseridos-1]=' ';
+                //response=response.substring(0,inseridos-1);
                 inseridos--;
                 apagados++;
             }
-            pilha.add(currentElement);
-            inseridos++;
+            if(inseridos<maxWeight) {
+                response[inseridos] = currentElement;
+                inseridos++;
+            }
         }
-        String response="";
-        for(int i=0;i<this.maxWeight;i++){
+
+
+        /*for(int i=0;i<this.maxWeight;i++){
             response+=pilha.get(i).getValue();
-        }
-        return response;
+        }*/
+
+        System.out.println(response);
+        return "";
     }
 
 
