@@ -16,6 +16,7 @@ public class Main {
 
         int nProjeteis;
         ApagaBacktracking backtracking;
+
         List<BacktrackingElement> numeros;
         String [] input;
         Long resistenciaCastelo;
@@ -26,8 +27,8 @@ public class Main {
             numeros = new ArrayList<BacktrackingElement>();
             //numeros.add(new BacktrackingElement(0, 0, -1));
             Main.criaEntrada(numeros);
-            pesoMax = numeros.size()-Integer.parseInt(input[1]);
-            backtracking = new ApagaBacktracking(numeros, pesoMax);
+            pesoMax = Integer.parseInt(input[0])-Integer.parseInt(input[1]);
+            backtracking = new ApagaBacktracking(numeros, pesoMax,Integer.parseInt(input[0]));
             String r = backtracking.getBetterCombination();
             System.out.println(r);
         }
@@ -51,16 +52,19 @@ class Backtracking{
     List<BacktrackingElement> inputList;
     String[][] matrizDinamica;
 
+    boolean [] resp;
     int maxWeight;
+    int nElements;
 
 
-    public Backtracking(List<BacktrackingElement> elements, int maxWeight){
+    public Backtracking(List<BacktrackingElement> elements, int maxWeight, int nElements){
         this.inputList=elements;
-
-        this.matrizDinamica = new String[elements.size()+1][maxWeight+1];
+        this.nElements=nElements;
+        //this.resp=new boolean[nElements];
+        //this.matrizDinamica = new String[2][maxWeight+1];
 
         this.maxWeight=maxWeight;
-        this.populaMatrizDinamica();
+        //this.populaMatrizDinamica();
     }
 
     public void populaMatrizDinamica(){
@@ -75,25 +79,35 @@ class Backtracking{
 
 
     public String executeDinamico(){
-        int n= this.matrizDinamica.length;
+        int n= this.nElements;
         String[] currentLine;
         BacktrackingElement currentElement;
-        for(int i=1;i<n;i++){
-            currentLine=matrizDinamica[i];
-            currentElement=this.inputList.get(i-1);
-            for(int j=1;j<currentLine.length;j++){
-                 this.matrizDinamica[i][j]=this.getMaxValue(currentElement,i,j);
+        for(int i=0;i<n;i++){
+            currentLine=matrizDinamica[0];
+            currentElement=this.inputList.get(i);
+            String [] tempResult= new String[currentLine.length];
+            tempResult[0]="";
+            int j=0;
+            j=currentLine.length-this.maxWeight;
+
+            //j=currentLine.length-this.maxWeight;
+            for(j=currentLine.length-2;j<currentLine.length;j++){
+                 //System.out.println(i +" "+j);
+                 tempResult[j]=this.getMaxValue(currentElement,i,j);
                  if(this.avaliaCondicaoParada(i,j)) return this.matrizDinamica[i][j];
                 }
+            matrizDinamica[0]=tempResult;
         }
-        return matrizDinamica[matrizDinamica.length-1][matrizDinamica[0].length-1];
+        return matrizDinamica[0][matrizDinamica[0].length-1];
     }
 
 
     private String getMaxValue(BacktrackingElement element, int i, int p){
-        String valorSemElemento=this.matrizDinamica[i-1][p];
+        String valorSemElemento=this.matrizDinamica[0][p];
+        if(valorSemElemento==null) valorSemElemento="";
+        if(this.matrizDinamica[0][p-element.getWeight()]==null) this.matrizDinamica[0][p-element.getWeight()]="";
         if(p<element.getWeight()) return valorSemElemento;
-        String valorComElemento=(this.matrizDinamica[i-1][p-element.getWeight()])+(element.getValue());
+        String valorComElemento=(this.matrizDinamica[0][p-element.getWeight()])+(element.getValue());
         if(valorComElemento.compareTo(valorSemElemento)>0) return valorComElemento;
         else return valorSemElemento;
     }
@@ -105,8 +119,34 @@ class Backtracking{
     }
 
     public String getBetterCombination(){
-        String r= this.executeDinamico();
+        String r= this.apgaNumeros();
         return r;
+    }
+
+    private String apgaNumeros(){
+        int apagados=0;
+        List<BacktrackingElement> pilha=new ArrayList<BacktrackingElement>();
+        int inseridos=0;
+        for(int i=0;i<this.nElements;i++){
+            if(i==0) {
+                pilha.add(inputList.get(i));
+                inseridos++;
+                continue;
+            }
+            BacktrackingElement currentElement=inputList.get(i);
+            while(inseridos>0 && currentElement.getValue().compareTo(pilha.get(inseridos-1).getValue())>0  && apagados<this.nElements-maxWeight){
+                pilha.remove(inseridos-1);
+                inseridos--;
+                apagados++;
+            }
+            pilha.add(currentElement);
+            inseridos++;
+        }
+        String response="";
+        for(int i=0;i<this.maxWeight;i++){
+            response+=pilha.get(i).getValue();
+        }
+        return response;
     }
 
 
@@ -150,8 +190,8 @@ class BacktrackingElement{
 
 class ApagaBacktracking extends Backtracking{
 
-    public ApagaBacktracking(List<BacktrackingElement> elements, int maxWeight) {
-        super(elements, maxWeight);
+    public ApagaBacktracking(List<BacktrackingElement> elements, int maxWeight, int nElements) {
+        super(elements, maxWeight, nElements);
 
     }
 
