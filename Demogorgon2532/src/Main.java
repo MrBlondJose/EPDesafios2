@@ -35,8 +35,12 @@ public class Main {
                 System.out.println(-1);
                 continue;
             }
+            int max=2000;
+            if(vidaMonstro*3<2000){
+                max=vidaMonstro*3;
+            }
 
-            backtracking = new DemogorgonBacktracking(feiticos, pesoMax,vidaMonstro,Integer.parseInt(input[0]));
+            backtracking = new DemogorgonBacktracking(feiticos,max,vidaMonstro,Integer.parseInt(input[0]));
             Long r = backtracking.getBetterCombination();
             if(backtracking.derrotouMonstro) System.out.println(r);
             else System.out.println(-1);
@@ -55,13 +59,16 @@ public class Main {
         BacktrackingElement melhorElement=new BacktrackingElement(-1,100,-1);
         for(int i=0;i<n;i++){
             input= ask().split(" ");
-            valor=Integer.parseInt(input[0]);
-            peso=Integer.parseInt(input[1]);
+            if(input[1].equals("1")){
+                int x=0;
+            }
+            valor=Integer.parseInt(input[1]);
+            peso=Integer.parseInt(input[0]);
             BacktrackingElement element=new BacktrackingElement(valor,peso,i);
             elements.add(element);
             if(element.getValue()>melhorElement.getValue()) melhorElement=element;
-            danos+=valor;
-            somaPesos+=peso;
+            danos+=peso;
+            somaPesos+=valor;
             if(danos<vidaMonstro || insere){
                 counter+=peso;
             }
@@ -102,6 +109,15 @@ class Backtracking{
         this.currentWeigth =new long[matrizDinamica[0].length];
         this.maxWeight=maxWeight;
         this.nFeiticos=nFeiticos;
+        this.populaMatriz();
+    }
+
+    private void populaMatriz(){
+        for(int i=0;i<matrizDinamica[0].length;i++){
+            matrizDinamica[0][i]=10000000;
+        }
+        matrizDinamica[0][0]=0;
+
     }
 
 
@@ -116,11 +132,10 @@ class Backtracking{
             currentLine=matrizDinamica[0];
             currentElement=this.inputList.get(i-1);
             long[] tempMatriz=new long[currentLine.length];
+            //tempMatriz[0]=Long.MAX_VALUE;
             for(int j=1;j<nColunas;j++){
-                tempMatriz[j] =this.getMaxValue(currentElement,i,j);
-                if(this.avaliaCondicaoParada(i,j,tempMatriz[j])) {
-                    nColunas=j;
-                }
+                tempMatriz[j] =this.getMaxValue(currentElement,i,j,tempMatriz);
+                this.avaliaCondicaoParada(i,j,tempMatriz[j]);
             }
             this.matrizDinamica[0]=tempMatriz;
         }
@@ -128,11 +143,12 @@ class Backtracking{
     }
 
 
-    private Long getMaxValue(BacktrackingElement element,int i, int p){
+    private Long getMaxValue(BacktrackingElement element,int i, int p, long[] temp){
         long valorSemElemento=this.matrizDinamica[0][p];
-        if(p<element.getWeight()) return valorSemElemento;
-        long valorComElemento=this.matrizDinamica[0][p-element.getWeight()]+element.getValue();
-        if(valorComElemento>valorSemElemento) return valorComElemento;
+        if(element.getWeight()>p) return valorSemElemento;
+        int index=p-element.getWeight();
+        long valorComElemento=matrizDinamica[0][index]+element.getValue();
+        if(valorComElemento<valorSemElemento) return valorComElemento;
         else return valorSemElemento;
     }
 
@@ -194,14 +210,14 @@ class BacktrackingElement implements Comparable{
 
 class DemogorgonBacktracking extends Backtracking{
 
-    public int menorMana;
+    public long menorMana;
     public int vidaMonstro;
     public boolean derrotouMonstro;
 
 
     public DemogorgonBacktracking(List<BacktrackingElement> elements, int maxWeight,int vidaMonstro,int nFeiticos) {
         super(elements, maxWeight,nFeiticos);
-        menorMana=1000000;
+        menorMana=Long.MAX_VALUE;
         this.vidaMonstro=vidaMonstro;
         this.derrotouMonstro=false;
 
@@ -209,8 +225,8 @@ class DemogorgonBacktracking extends Backtracking{
 
     @Override
     public boolean avaliaCondicaoParada(int i, int j,long valor) {
-        if(valor>=vidaMonstro && j<menorMana){
-            menorMana=j;
+        if(j>=vidaMonstro && valor<menorMana){
+            menorMana=valor;
             derrotouMonstro=true;
             return true;
         }
